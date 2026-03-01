@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-
+	"forum/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -26,6 +26,16 @@ func ConnectDB() {
 	}
 
 	fmt.Println("Database connected")
+	err = database.AutoMigrate(
+			&models.User{},
+		 	&models.Topic{},
+		  	&models.Post{},
+		   	&models.Comment{},
+		)
+		if err != nil {
+			log.Fatal("Failed to migrate database")
+		}
 
-	DB = database
+		fmt.Println("Database migrated")
+		DB = database
 }
