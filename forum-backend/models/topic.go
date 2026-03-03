@@ -6,6 +6,8 @@ type Topic struct {
 	ID uint `gorm:"primaryKey"`
 	Title string `gorm:"size:255;not null"`
 	Description string `gorm:"type:text"`
-	UserID uint `gorm:"notnull"`
+	UserID uint `gorm:"not null"`
+	User User `gorm:"foreignKey:UserID"`
 	CreatedAt time.Time
+	updatedAt time.Time
 }
