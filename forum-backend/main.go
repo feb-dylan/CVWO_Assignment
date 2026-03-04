@@ -11,7 +11,9 @@ func main() {
 	config.ConnectDB()
 
 	r := gin.Default()
-	routes.RegisterRoutes(r)
 
-	r.Run(":8080")
+	routes.RegisterRoutes(r, config.DB)
+
+	port := ":8080"
+	r.Run(port)
 }

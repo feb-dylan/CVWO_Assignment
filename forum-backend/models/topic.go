@@ -9,5 +9,5 @@ type Topic struct {
 	UserID uint `gorm:"not null"`
 	User User `gorm:"foreignKey:UserID"`
 	CreatedAt time.Time
-	updatedAt time.Time
+	UpdatedAt time.Time
 }

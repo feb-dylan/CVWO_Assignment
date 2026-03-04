@@ -5,5 +5,5 @@ type User struct {
 	Username string `gorm:"size:100;unique;not null"`
 	Password string `gorm:"size:255;not null"`
 	CreatedAt time.Time
-	updatedAt time.Time
+	UpdatedAt time.Time
 }
