@@ -7,8 +7,8 @@ type CreateTopicDTO struct {
 }
 
 type UpdateTopicDTO struct {
-	Title       string `json:"title" binding:"omitempty,min=3,max=255"`
-	Description string `json:"description" binding:"omitempty,max=1000"`
+	Title       *string `json:"title" binding:"omitempty,min=3,max=255"`
+	Description *string `json:"description" binding:"omitempty,max=1000"`
 }
 
 type TopicResponseDTO struct {

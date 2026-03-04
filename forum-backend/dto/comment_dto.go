@@ -7,7 +7,7 @@ type CreateCommentDTO struct {
 	ParentID *uint  `json:"parent_id,omitempty"`
 }
 type UpdateCommentDTO struct {
-	Content string `json:"content" binding:"omitempty"`
+	Content *string `json:"content" binding:"omitempty"`
 }
 type CommentResponseDTO struct {
 	ID        uint   `json:"id"`

@@ -8,8 +8,8 @@ type CreatePostDTO struct {
 }
 
 type UpdatePostDTO struct {
-	Title   string `json:"title" binding:"omitempty,min=3,max=255"`
-	Content string `json:"content" binding:"omitempty"`
+	Title   *string `json:"title" binding:"omitempty,min=3,max=255"`
+	Content *string `json:"content" binding:"omitempty"`
 }
 
 type PostResponseDTO struct {
