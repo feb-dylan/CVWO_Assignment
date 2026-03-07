@@ -1,4 +1,5 @@
 package dto
+import "time"
 
 type CreatePostDTO struct {
 	Title   string `json:"title" binding:"required,min=3,max=255"`
@@ -18,6 +19,6 @@ type PostResponseDTO struct {
 	Content   string `json:"content"`
 	TopicID   uint   `json:"topic_id"`
 	UserID    uint   `json:"user_id"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

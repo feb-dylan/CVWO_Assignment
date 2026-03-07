@@ -1,5 +1,5 @@
 package dto
-
+import "time"
 type CreateCommentDTO struct {
 	Content  string `json:"content" binding:"required"`
 	PostID   uint   `json:"post_id" binding:"required"`
@@ -15,6 +15,6 @@ type CommentResponseDTO struct {
 	PostID    uint   `json:"post_id"`
 	UserID    uint   `json:"user_id"`
 	ParentID  *uint  `json:"parent_id"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
