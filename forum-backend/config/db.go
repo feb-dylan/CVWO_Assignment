@@ -10,22 +10,26 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
 
-func ConnectDB() {
+
+func ConnectDB() *gorm.DB {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file" , err)
 	}
 
 	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		log.Fatal("DB_DSN environment variable not set")
+	}
 
 	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect database")
+		log.Fatal("Failed to connect database" , err)
 	}
 
 	fmt.Println("Database connected")
+
 	err = database.AutoMigrate(
 			&models.User{},
 		 	&models.Topic{},
@@ -33,9 +37,9 @@ func ConnectDB() {
 		   	&models.Comment{},
 		)
 		if err != nil {
-			log.Fatal("Failed to migrate database")
+			log.Fatal("Failed to migrate database" , err)
 		}
 
 		fmt.Println("Database migrated")
-		DB = database
+	return database
 }
