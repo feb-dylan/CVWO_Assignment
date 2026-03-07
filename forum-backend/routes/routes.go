@@ -6,7 +6,7 @@ import (
 )
 
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
-	// UserRoutes(r, db)
+	UserRoutes(r, db)
 	TopicRoutes(r, db)
 	PostRoutes(r, db)
 	CommentRoutes(r, db)
