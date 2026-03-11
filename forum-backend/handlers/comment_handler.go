@@ -1,139 +1,206 @@
 package handlers
 
 import (
-	"forum/dto"
-	"forum/models"
 	"net/http"
-	"time"
-
+	"strconv"
+	"forum/dto"
+	"forum/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func CreateComment(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var input dto.CreateCommentDTO
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		comment := models.Comment{
-			Content:   input.Content,
-			PostID:    input.PostID,
-			UserID:    input.UserID,
-			ParentID:  input.ParentID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-
-		if err := db.Create(&comment).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusCreated, dto.CommentResponseDTO{
-			ID:        comment.ID,
-			Content:   comment.Content,
-			PostID:    comment.PostID,
-			UserID:    comment.UserID,
-			ParentID:  comment.ParentID,
-			CreatedAt: comment.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: comment.UpdatedAt.Format(time.RFC3339),
-		})
-	}
+type CommentHandler struct {
+	commentService *services.CommentService
 }
 
-func GetComments(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var comments []models.Comment
-		if err := db.Find(&comments).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		var response []dto.CommentResponseDTO
-		for _, comment := range comments {
-			response = append(response, dto.CommentResponseDTO{
-				ID:        comment.ID,
-				Content:   comment.Content,
-				PostID:    comment.PostID,
-				UserID:    comment.UserID,
-				ParentID:  comment.ParentID,
-				CreatedAt: comment.CreatedAt.Format(time.RFC3339),
-				UpdatedAt: comment.UpdatedAt.Format(time.RFC3339),
-			})
-		}
-
-		c.JSON(http.StatusOK, response)
+func NewCommentHandler(commentService *services.CommentService) *CommentHandler {
+	return &CommentHandler{
+		commentService: commentService,
 	}
 }
-
-func GetCommentByID(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		var comment models.Comment
-		if err := db.First(&comment, id).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
-			return
-		}
-
-		c.JSON(http.StatusOK, dto.CommentResponseDTO{
-			ID:        comment.ID,
-			Content:   comment.Content,
-			PostID:    comment.PostID,
-			UserID:    comment.UserID,
-			ParentID:  comment.ParentID,
-			CreatedAt: comment.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: comment.UpdatedAt.Format(time.RFC3339),
-		})
+func (h *CommentHandler) CreateComment(c *gin.Context) {
+	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid post id"})
+		return
 	}
+
+	var req dto.CreateCommentDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	req.PostID = uint(postID)
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	comment, err := h.commentService.CreateComment(req, userID.(uint))
+	if err != nil {
+		switch err.Error() {
+		case "post not found":
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case "parent comment not found":
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusCreated, comment)
 }
 
-func UpdateComment(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		var comment models.Comment
-		if err := db.First(&comment, id).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
-			return
-		}
-
-		var input dto.UpdateCommentDTO
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if input.Content != nil {
-			comment.Content = *input.Content
-		}
-		comment.UpdatedAt = time.Now()
-
-		if err := db.Save(&comment).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, dto.CommentResponseDTO{
-			ID:        comment.ID,
-			Content:   comment.Content,
-			PostID:    comment.PostID,
-			UserID:    comment.UserID,
-			ParentID:  comment.ParentID,
-			CreatedAt: comment.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: comment.UpdatedAt.Format(time.RFC3339),
-		})
+func (h *CommentHandler) GetCommentsByPost(c *gin.Context) {
+	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid post id"})
+		return
 	}
+
+	comments, err := h.commentService.GetCommentsByPostID(uint(postID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, comments)
 }
 
-func DeleteComment(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		if err := db.Delete(&models.Comment{}, id).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"message": "Comment deleted successfully"})
+func (h *CommentHandler) GetCommentByID(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+		return
 	}
+
+	comment, err := h.commentService.GetCommentByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, comment)
+}
+
+func (h *CommentHandler) UpdateComment(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+		return
+	}
+
+	var req dto.UpdateCommentDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	comment, err := h.commentService.UpdateComment(uint(id), req, userID.(uint))
+	if err != nil {
+		switch err.Error() {
+		case "comment not found":
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case "unauthorized":
+			c.JSON(http.StatusForbidden, gin.H{"error": "you don't have permission to update this comment"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, comment)
+}
+
+func (h *CommentHandler) DeleteComment(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	err = h.commentService.DeleteComment(uint(id), userID.(uint))
+	if err != nil {
+		switch err.Error() {
+		case "comment not found":
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case "unauthorized":
+			c.JSON(http.StatusForbidden, gin.H{"error": "you don't have permission to delete this comment"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "comment deleted successfully"})
+}
+
+func (h *CommentHandler) CreateReply(c *gin.Context) {
+	commentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+		return
+	}
+
+	var req dto.CreateCommentDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	parentID := uint(commentID)
+	req.ParentID = &parentID
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+
+	parentComment, err := h.commentService.GetCommentByID(uint(commentID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "parent comment not found"})
+		return
+	}
+	req.PostID = parentComment.PostID
+
+	comment, err := h.commentService.CreateComment(req, userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, comment)
+}
+
+func (h *CommentHandler) GetReplies(c *gin.Context) {
+	commentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment id"})
+		return
+	}
+
+	replies, err := h.commentService.GetRepliesByCommentID(uint(commentID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, replies)
 }

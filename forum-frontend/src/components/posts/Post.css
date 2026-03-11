@@ -1,0 +1,139 @@
+
+.post-section {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+}
+.post-section h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.post-form, .post-edit-form {
+  margin-bottom: 25px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+}
+
+.post-form h3, .post-edit-form h3 {
+  margin-bottom: 10px;
+  color: #2575fc;
+}
+
+.post-form div, .post-edit-form div {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.post-form label, .post-edit-form label {
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.post-form input, .post-form textarea,
+.post-edit-form input, .post-edit-form textarea {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.post-form input:focus, .post-form textarea:focus,
+.post-edit-form input:focus, .post-edit-form textarea:focus {
+  border-color: #2575fc;
+  box-shadow: 0 0 5px rgba(37, 117, 252, 0.3);
+  outline: none;
+}
+
+.form-error {
+  color: #ff4d4f;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.post-form button, .post-edit-form button {
+  padding: 10px 15px;
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-right: 10px;
+}
+
+.post-form button:hover, .post-edit-form button:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.post-edit-form button[type="button"] {
+  background: #ff4d4f;
+}
+.post-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.post-section li {
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.post-section li h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.post-section li p {
+  margin: 0 0 5px 0;
+  color: #555;
+}
+
+.post-section li small {
+  display: block;
+  color: #999;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.post-actions button {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 5px;
+  transition: 0.2s;
+}
+
+.post-actions button:first-child {
+  background-color: #2575fc;
+  color: #fff;
+}
+
+.post-actions button:first-child:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.post-actions button:last-child {
+  background-color: #ff4d4f;
+  color: #fff;
+}
+
+.post-actions button:last-child:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}

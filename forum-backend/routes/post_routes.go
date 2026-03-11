@@ -3,15 +3,16 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"forum/handlers"
-	"gorm.io/gorm"
 )
-func PostRoutes(r *gin.Engine, db *gorm.DB) {
-	postGroup := r.Group("/posts")
+
+func PostRoutes(r *gin.RouterGroup, postHandler *handlers.PostHandler) {
+	r.GET("/topics/:id/posts", postHandler.GetPostsByTopic)	
+	posts := r.Group("/posts")
 	{
-		postGroup.POST("/", handlers.CreatePost(db))
-		postGroup.GET("/", handlers.GetPosts(db))
-		postGroup.GET("/:id", handlers.GetPostByID(db))
-		postGroup.PUT("/:id", handlers.UpdatePost(db))
-		postGroup.DELETE("/:id", handlers.DeletePost(db))
+		posts.POST("/", postHandler.CreatePost)
+		posts.GET("/", postHandler.GetPosts)
+		posts.GET("/:id", postHandler.GetPostByID)
+		posts.PUT("/:id", postHandler.UpdatePost)
+		posts.DELETE("/:id", postHandler.DeletePost)
 	}
 }

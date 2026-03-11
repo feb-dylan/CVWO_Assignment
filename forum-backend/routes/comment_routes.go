@@ -3,16 +3,17 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"forum/handlers"
-	"gorm.io/gorm"
 )
 
-func CommentRoutes(r *gin.Engine , db *gorm.DB){
-	commentGroup := r.Group("/comments")
+func CommentRoutes(r *gin.RouterGroup ,commentHandler *handlers.CommentHandler){
+	r.POST("/posts/:id/comments", commentHandler.CreateComment)
+	r.GET("/posts/:id/comments", commentHandler.GetCommentsByPost)
+	r.POST("/comments/:id/replies", commentHandler.CreateReply)
+	r.GET("/comments/:id/replies", commentHandler.GetReplies)
+	comments := r.Group("/comments")
 	{
-		commentGroup.POST("/", handlers.CreateComment(db))
-		commentGroup.GET("/", handlers.GetComments(db))
-		commentGroup.GET("/:id", handlers.GetCommentByID(db))
-		commentGroup.PUT("/:id", handlers.UpdateComment(db))
-		commentGroup.DELETE("/:id", handlers.DeleteComment(db))
+		comments.GET("/:id", commentHandler.GetCommentByID)
+		comments.PUT("/:id", commentHandler.UpdateComment)
+		comments.DELETE("/:id", commentHandler.DeleteComment)
 	}
 }

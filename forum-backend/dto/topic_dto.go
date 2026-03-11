@@ -1,9 +1,7 @@
 package dto
-import "time"
 type CreateTopicDTO struct {
 	Title       string `json:"title" binding:"required,min=3,max=255"`
 	Description string `json:"description" binding:"omitempty,max=1000"`
-	UserID      uint   `json:"user_id" binding:"required"`
 }
 
 type UpdateTopicDTO struct {
@@ -16,6 +14,7 @@ type TopicResponseDTO struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	UserID      uint   `json:"user_id"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	Username    string `json:"username"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
